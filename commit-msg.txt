@@ -1,0 +1,6 @@
+feat: Hantar automatic label printer client
+
+- Polls Laravel API for pending orders
+- Generates HTML labels matching design
+- Auto-opens labels in browser for printing
+- Marks orders as printed via API
