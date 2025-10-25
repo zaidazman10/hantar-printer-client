@@ -4,7 +4,7 @@ const { exec } = require('child_process');
 const path = require('path');
 
 // Configuration
-const API_URL = 'http://hantar.test/api';
+const API_URL = 'https://hantar-production.up.railway.app/api';
 const POLL_INTERVAL = 5000; // 5 seconds
 const OUTPUT_DIR = path.join(__dirname, 'labels');
 
