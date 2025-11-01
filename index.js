@@ -215,27 +215,61 @@ async function printLabel(order) {
     const localUrl = `http://localhost:${LOCAL_SERVER_PORT}/${filename}`;
     
     if (process.platform === 'win32') {
-        // Try Chrome with headless printing
+        // Method 1: Try Chrome to generate PDF first
         const chromePaths = [
             'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
             'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
             `${process.env.LOCALAPPDATA}\\Google\\Chrome\\Application\\chrome.exe`
         ];
         
+        const sumatraPaths = [
+            'C:\\Program Files\\SumatraPDF\\SumatraPDF.exe',
+            'C:\\Program Files (x86)\\SumatraPDF\\SumatraPDF.exe',
+            `${process.env.LOCALAPPDATA}\\Programs\\SumatraPDF\\SumatraPDF.exe`
+        ];
+        
         let chromeFound = false;
         for (const chromePath of chromePaths) {
             if (fs.existsSync(chromePath)) {
-                // Headless Chrome with PDF printing to default printer
-                const printCmd = `"${chromePath}" --headless --disable-gpu --print-to-pdf-no-header --no-pdf-header-footer --print-to-default-printer "${localUrl}"`;
+                const pdfPath = filepath.replace('.html', '.pdf');
                 
-                exec(printCmd, (error, stdout, stderr) => {
+                // Generate PDF from HTML
+                const pdfCmd = `"${chromePath}" --headless --disable-gpu --print-to-pdf="${pdfPath}" "${localUrl}"`;
+                
+                exec(pdfCmd, (error, stdout, stderr) => {
                     if (error) {
-                        console.log(`  ⚠️  Auto-print failed: ${error.message}`);
+                        console.log(`  ⚠️  PDF generation failed: ${error.message}`);
                         console.log(`  🔗 Opening in browser manually...`);
                         exec(`start "" "${filepath}"`);
-                    } else {
-                        console.log(`  🖨️  Sent to printer automatically`);
+                        return;
                     }
+                    
+                    // Wait for PDF to be written
+                    setTimeout(() => {
+                        // Try SumatraPDF for silent printing
+                        let sumatraFound = false;
+                        for (const sumatraPath of sumatraPaths) {
+                            if (fs.existsSync(sumatraPath)) {
+                                // Silent print with SumatraPDF
+                                exec(`"${sumatraPath}" -print-to-default -silent "${pdfPath}"`, (err) => {
+                                    if (err) {
+                                        console.log(`  ⚠️  SumatraPDF print failed: ${err.message}`);
+                                        exec(`start "" "${pdfPath}"`);
+                                    } else {
+                                        console.log(`  🖨️  Sent to printer automatically (SumatraPDF)`);
+                                    }
+                                });
+                                sumatraFound = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!sumatraFound) {
+                            // Fallback: open PDF in default viewer
+                            console.log(`  📝 PDF generated, opening for printing...`);
+                            exec(`start "" "${pdfPath}"`);
+                        }
+                    }, 1000);
                 });
                 chromeFound = true;
                 break;
@@ -243,7 +277,7 @@ async function printLabel(order) {
         }
         
         if (!chromeFound) {
-            // Fallback: open in default browser
+            // Fallback: open HTML in default browser
             console.log(`  🔗 Chrome not found, opening in default browser...`);
             exec(`start "" "${filepath}"`, (error) => {
                 if (error) {
