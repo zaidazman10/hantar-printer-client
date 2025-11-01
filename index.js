@@ -3,6 +3,7 @@ const fs = require('fs');
 const { exec } = require('child_process');
 const path = require('path');
 const http = require('http');
+const QRCode = require('qrcode');
 
 // Configuration
 const API_URL = 'https://hantar-production.up.railway.app/api';
@@ -36,7 +37,26 @@ server.listen(LOCAL_SERVER_PORT, () => {
 });
 
 // Generate HTML for label
-function generateLabelHTML(order) {
+async function generateLabelHTML(order) {
+    // Generate Google Maps URL
+    const fullAddress = `${order.alamat}${order.kawasan ? ', ' + order.kawasan : ''}`;
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
+    
+    // Generate QR code as data URL
+    let qrCodeDataUrl = '';
+    try {
+        qrCodeDataUrl = await QRCode.toDataURL(mapsUrl, {
+            width: 120,
+            margin: 1,
+            color: {
+                dark: '#000000',
+                light: '#ffffff'
+            }
+        });
+    } catch (err) {
+        console.error('QR Code generation error:', err);
+    }
+    
     return `
 <!DOCTYPE html>
 <html>
@@ -103,6 +123,21 @@ function generateLabelHTML(order) {
             border: 4px solid black;
             padding: 10px;
             margin-top: 10px;
+        }
+        .qr-section {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            border: 4px solid black;
+        }
+        .qr-section img {
+            display: block;
+            margin: 10px auto;
+        }
+        .qr-label {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -195,6 +230,14 @@ function generateLabelHTML(order) {
                 </div>
             </div>
         </div>
+        
+        ${qrCodeDataUrl ? `
+        <div class="qr-section">
+            <div class="qr-label">📍 SCAN FOR LOCATION</div>
+            <img src="${qrCodeDataUrl}" alt="QR Code" width="120" height="120">
+            <div style="font-size: 12px; margin-top: 5px;">Scan to open Google Maps</div>
+        </div>
+        ` : ''}
     </div>
 </body>
 </html>
@@ -206,7 +249,7 @@ async function printLabel(order) {
     const filename = `order-${order.id}-${Date.now()}.html`;
     const filepath = path.join(OUTPUT_DIR, filename);
     
-    const html = generateLabelHTML(order);
+    const html = await generateLabelHTML(order);
     fs.writeFileSync(filepath, html);
     
     console.log(`  💾 Label saved: ${filename}`);
