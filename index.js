@@ -170,7 +170,7 @@ function generateLabelHTML(order) {
     `;
 }
 
-// Print label (save as HTML for now, can be opened in browser to print)
+// Print label directly to printer
 async function printLabel(order) {
     const filename = `order-${order.id}-${Date.now()}.html`;
     const filepath = path.join(OUTPUT_DIR, filename);
@@ -180,20 +180,30 @@ async function printLabel(order) {
     
     console.log(`  💾 Label saved: ${filename}`);
     
-    // Auto-open in default browser for printing
-    // On Mac: open file
-    // On Windows: start file
-    // On Linux: xdg-open file
-    const command = process.platform === 'darwin' ? 'open' :
-                   process.platform === 'win32' ? 'start' : 'xdg-open';
-    
-    exec(`${command} "${filepath}"`, (error) => {
-        if (error) {
-            console.log(`  ⚠️  Could not auto-open: ${error.message}`);
-        } else {
-            console.log(`  🖨️  Opened in browser for printing`);
-        }
-    });
+    // Auto-print directly to default printer
+    if (process.platform === 'win32') {
+        // Windows: Use PowerShell to print directly
+        const psCommand = `powershell -Command "Start-Process -FilePath '${filepath}' -Verb Print -WindowStyle Hidden"`;
+        
+        exec(psCommand, (error) => {
+            if (error) {
+                console.log(`  ⚠️  Print failed: ${error.message}`);
+                console.log(`  📂 File saved at: ${filepath}`);
+            } else {
+                console.log(`  🖨️  Sent to printer automatically`);
+            }
+        });
+    } else {
+        // Mac/Linux: fallback to opening in browser
+        const command = process.platform === 'darwin' ? 'open' : 'xdg-open';
+        exec(`${command} "${filepath}"`, (error) => {
+            if (error) {
+                console.log(`  ⚠️  Could not auto-open: ${error.message}`);
+            } else {
+                console.log(`  🖨️  Opened in browser for printing`);
+            }
+        });
+    }
     
     return filepath;
 }
