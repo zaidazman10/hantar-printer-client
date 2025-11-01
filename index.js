@@ -24,6 +24,18 @@ function generateLabelHTML(order) {
 <html>
 <head>
     <meta charset="UTF-8">
+    <script>
+        window.onload = function() {
+            // Auto-print when page loads
+            setTimeout(function() {
+                window.print();
+                // Auto-close after printing (optional)
+                setTimeout(function() {
+                    window.close();
+                }, 1000);
+            }, 500);
+        };
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -185,17 +197,32 @@ async function printLabel(order) {
         // Windows: Create a VBScript to print the HTML file
         const vbsScript = path.join(OUTPUT_DIR, 'print.vbs');
         const vbsContent = `
-Set objShell = CreateObject("WScript.Shell")
 Set IE = CreateObject("InternetExplorer.Application")
 IE.Visible = False
 IE.Navigate "file:///${filepath.replace(/\\/g, '/')}"
-Do While IE.Busy
+
+' Wait for page to load
+Do While IE.Busy Or IE.ReadyState <> 4
     WScript.Sleep 100
 Loop
-WScript.Sleep 500
-IE.ExecWB 6, 2
+
+' Wait for document to be ready
+Do While IE.Document.ReadyState <> "complete"
+    WScript.Sleep 100
+Loop
+
+' Additional wait for rendering
 WScript.Sleep 1000
+
+' Print without dialog (6 = print, 2 = no dialog)
+IE.ExecWB 6, 2
+
+' Wait for print to spool
+WScript.Sleep 2000
+
+' Close IE
 IE.Quit
+Set IE = Nothing
         `.trim();
         
         fs.writeFileSync(vbsScript, vbsContent);
