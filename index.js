@@ -182,16 +182,33 @@ async function printLabel(order) {
     
     // Auto-print directly to default printer
     if (process.platform === 'win32') {
-        // Windows: Use PowerShell to print directly
-        const psCommand = `powershell -Command "Start-Process -FilePath '${filepath}' -Verb Print -WindowStyle Hidden"`;
+        // Windows: Create a VBScript to print the HTML file
+        const vbsScript = path.join(OUTPUT_DIR, 'print.vbs');
+        const vbsContent = `
+Set objShell = CreateObject("WScript.Shell")
+Set IE = CreateObject("InternetExplorer.Application")
+IE.Visible = False
+IE.Navigate "file:///${filepath.replace(/\\/g, '/')}"
+Do While IE.Busy
+    WScript.Sleep 100
+Loop
+WScript.Sleep 500
+IE.ExecWB 6, 2
+WScript.Sleep 1000
+IE.Quit
+        `.trim();
         
-        exec(psCommand, (error) => {
+        fs.writeFileSync(vbsScript, vbsContent);
+        
+        exec(`cscript //nologo "${vbsScript}"`, (error, stdout, stderr) => {
             if (error) {
                 console.log(`  ⚠️  Print failed: ${error.message}`);
                 console.log(`  📂 File saved at: ${filepath}`);
             } else {
                 console.log(`  🖨️  Sent to printer automatically`);
             }
+            // Clean up VBS script
+            try { fs.unlinkSync(vbsScript); } catch(e) {}
         });
     } else {
         // Mac/Linux: fallback to opening in browser
