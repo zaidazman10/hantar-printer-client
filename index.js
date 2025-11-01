@@ -24,24 +24,25 @@ function generateLabelHTML(order) {
 <html>
 <head>
     <meta charset="UTF-8">
-    <script>
-        window.onload = function() {
-            // Auto-print when page loads
-            setTimeout(function() {
-                window.print();
-                // Auto-close after printing (optional)
-                setTimeout(function() {
-                    window.close();
-                }, 1000);
-            }, 500);
-        };
-    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        @page {
+            size: 4in auto;
+            margin: 0;
+        }
+        
         body { 
             font-family: Arial, sans-serif; 
             padding: 20px;
             width: 4in;
+        }
+        
+        @media print {
+            body {
+                width: 100%;
+                padding: 10px;
+            }
         }
         .label { 
             border: 8px solid black; 
@@ -194,49 +195,41 @@ async function printLabel(order) {
     
     // Auto-print directly to default printer
     if (process.platform === 'win32') {
-        // Windows: Create a VBScript to print the HTML file
-        const vbsScript = path.join(OUTPUT_DIR, 'print.vbs');
-        const vbsContent = `
-Set IE = CreateObject("InternetExplorer.Application")
-IE.Visible = False
-IE.Navigate "file:///${filepath.replace(/\\/g, '/')}"
-
-' Wait for page to load
-Do While IE.Busy Or IE.ReadyState <> 4
-    WScript.Sleep 100
-Loop
-
-' Wait for document to be ready
-Do While IE.Document.ReadyState <> "complete"
-    WScript.Sleep 100
-Loop
-
-' Additional wait for rendering
-WScript.Sleep 1000
-
-' Print without dialog (6 = print, 2 = no dialog)
-IE.ExecWB 6, 2
-
-' Wait for print to spool
-WScript.Sleep 2000
-
-' Close IE
-IE.Quit
-Set IE = Nothing
-        `.trim();
+        // Try Chrome with kiosk print mode first
+        const chromePaths = [
+            'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+            `${process.env.LOCALAPPDATA}\\Google\\Chrome\\Application\\chrome.exe`
+        ];
         
-        fs.writeFileSync(vbsScript, vbsContent);
-        
-        exec(`cscript //nologo "${vbsScript}"`, (error, stdout, stderr) => {
-            if (error) {
-                console.log(`  ⚠️  Print failed: ${error.message}`);
-                console.log(`  📂 File saved at: ${filepath}`);
-            } else {
-                console.log(`  🖨️  Sent to printer automatically`);
+        let chromeFound = false;
+        for (const chromePath of chromePaths) {
+            if (fs.existsSync(chromePath)) {
+                // Chrome kiosk mode with auto-print
+                const printCmd = `"${chromePath}" --kiosk --kiosk-printing "${filepath}"`;
+                exec(printCmd, (error) => {
+                    if (error) {
+                        console.log(`  ⚠️  Chrome print failed: ${error.message}`);
+                    } else {
+                        console.log(`  🖨️  Sent to printer automatically (Chrome kiosk mode)`);
+                    }
+                });
+                chromeFound = true;
+                break;
             }
-            // Clean up VBS script
-            try { fs.unlinkSync(vbsScript); } catch(e) {}
-        });
+        }
+        
+        if (!chromeFound) {
+            // Fallback: open in default browser
+            console.log(`  🔗 Chrome not found, opening in default browser...`);
+            exec(`start "" "${filepath}"`, (error) => {
+                if (error) {
+                    console.log(`  ⚠️  Could not open: ${error.message}`);
+                } else {
+                    console.log(`  🌐 Opened in browser - press Ctrl+P to print`);
+                }
+            });
+        }
     } else {
         // Mac/Linux: fallback to opening in browser
         const command = process.platform === 'darwin' ? 'open' : 'xdg-open';
