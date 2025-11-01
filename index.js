@@ -2,20 +2,38 @@ const axios = require('axios');
 const fs = require('fs');
 const { exec } = require('child_process');
 const path = require('path');
+const http = require('http');
 
 // Configuration
 const API_URL = 'https://hantar-production.up.railway.app/api';
 const POLL_INTERVAL = 5000; // 5 seconds
 const OUTPUT_DIR = path.join(__dirname, 'labels');
+const LOCAL_SERVER_PORT = 9876;
 
 // Create output directory if it doesn't exist
 if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
-console.log('🐬 Hantar Printer Client Started');
-console.log(`📡 Connecting to: ${API_URL}`);
-console.log(`⏱️  Polling every ${POLL_INTERVAL / 1000} seconds\n`);
+// Simple HTTP server to serve label files
+const server = http.createServer((req, res) => {
+    const filePath = path.join(OUTPUT_DIR, path.basename(req.url));
+    
+    if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(fs.readFileSync(filePath));
+    } else {
+        res.writeHead(404);
+        res.end('Not found');
+    }
+});
+
+server.listen(LOCAL_SERVER_PORT, () => {
+    console.log('🐬 Hantar Printer Client Started');
+    console.log(`📡 Connecting to: ${API_URL}`);
+    console.log(`🌐 Local server: http://localhost:${LOCAL_SERVER_PORT}`);
+    console.log(`⏱️  Polling every ${POLL_INTERVAL / 1000} seconds\n`);
+});
 
 // Generate HTML for label
 function generateLabelHTML(order) {
@@ -194,8 +212,10 @@ async function printLabel(order) {
     console.log(`  💾 Label saved: ${filename}`);
     
     // Auto-print directly to default printer
+    const localUrl = `http://localhost:${LOCAL_SERVER_PORT}/${filename}`;
+    
     if (process.platform === 'win32') {
-        // Try Chrome with kiosk print mode first
+        // Try Chrome with headless printing
         const chromePaths = [
             'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
             'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
@@ -205,13 +225,16 @@ async function printLabel(order) {
         let chromeFound = false;
         for (const chromePath of chromePaths) {
             if (fs.existsSync(chromePath)) {
-                // Chrome kiosk mode with auto-print
-                const printCmd = `"${chromePath}" --kiosk --kiosk-printing "${filepath}"`;
-                exec(printCmd, (error) => {
+                // Headless Chrome with PDF printing to default printer
+                const printCmd = `"${chromePath}" --headless --disable-gpu --print-to-pdf-no-header --no-pdf-header-footer --print-to-default-printer "${localUrl}"`;
+                
+                exec(printCmd, (error, stdout, stderr) => {
                     if (error) {
-                        console.log(`  ⚠️  Chrome print failed: ${error.message}`);
+                        console.log(`  ⚠️  Auto-print failed: ${error.message}`);
+                        console.log(`  🔗 Opening in browser manually...`);
+                        exec(`start "" "${filepath}"`);
                     } else {
-                        console.log(`  🖨️  Sent to printer automatically (Chrome kiosk mode)`);
+                        console.log(`  🖨️  Sent to printer automatically`);
                     }
                 });
                 chromeFound = true;
