@@ -159,16 +159,16 @@ async function generateLabelHTML(order) {
         body { 
             font-family: Arial, Helvetica, sans-serif; 
             font-weight: 600;
-            padding: 8px;
+            padding: 6px;
             width: 148mm;
-            font-size: 9pt;
+            font-size: 11pt;
         }
         
         @media print {
             body {
                 width: 100%;
                 padding: 5px;
-                font-size: 8.5pt;
+                font-size: 10pt;
             }
         }
         
@@ -180,8 +180,8 @@ async function generateLabelHTML(order) {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 15px;
-            margin-bottom: 10px;
+            gap: 10px;
+            margin-bottom: 8px;
         }
         
         .logo-section {
@@ -191,12 +191,12 @@ async function generateLabelHTML(order) {
         }
         
         .logo {
-            width: 90px;
+            width: 110px;
             height: auto;
         }
         
         .nh-logo {
-            width: 80px;
+            width: 95px;
             height: auto;
         }
         
@@ -206,35 +206,35 @@ async function generateLabelHTML(order) {
         }
         
         .barcode {
-            width: 220px;
+            width: 230px;
             height: auto;
         }
         
         .section-title {
-            font-size: 10pt;
-            font-weight: 800;
-            margin-bottom: 5px;
+            font-size: 12pt;
+            font-weight: 700;
+            margin-bottom: 4px;
         }
         
         .divider {
             border-bottom: 0.5pt solid black;
-            margin: 10px 0;
+            margin: 8px 0;
         }
         
         .customer-info {
-            font-size: 9.5pt;
+            font-size: 11pt;
             font-weight: 600;
-            line-height: 1.4;
+            line-height: 1.35;
         }
         
         .info-row {
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
         
         .customer-row {
             display: flex;
-            gap: 20px;
-            margin-bottom: 10px;
+            gap: 15px;
+            margin-bottom: 8px;
         }
         
         .customer-col-left {
@@ -275,7 +275,7 @@ async function generateLabelHTML(order) {
         
         .two-column {
             display: flex;
-            gap: 20px;
+            gap: 15px;
         }
         
         .column-left {
@@ -283,23 +283,23 @@ async function generateLabelHTML(order) {
         }
         
         .column-right {
-            flex: 0.7;
+            flex: 0.75;
             border-left: 0.5pt solid black;
-            padding-left: 12px;
+            padding-left: 10px;
         }
         
         .items-list {
-            margin: 10px 0;
+            margin: 8px 0;
         }
         
         .item {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            margin-bottom: 3px;
-            font-size: 9.5pt;
+            margin-bottom: 2px;
+            font-size: 11pt;
             font-weight: 600;
-            line-height: 1.3;
+            line-height: 1.25;
         }
         
         .item-bullet {
@@ -329,9 +329,9 @@ async function generateLabelHTML(order) {
         }
         
         .delivery-options {
-            font-size: 9pt;
+            font-size: 11pt;
             font-weight: 600;
-            line-height: 1.6;
+            line-height: 1.5;
         }
         
         .checkbox {
@@ -341,9 +341,9 @@ async function generateLabelHTML(order) {
         }
         
         .payment-section {
-            font-size: 9pt;
+            font-size: 11pt;
             font-weight: 600;
-            line-height: 1.5;
+            line-height: 1.4;
         }
         
         .cooking-section {
