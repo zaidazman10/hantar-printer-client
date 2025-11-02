@@ -77,10 +77,10 @@ async function generateLabelHTML(order) {
         const orderNumber = `${dateString}${String(order.id).padStart(3, '0')}`;
         JsBarcode(canvas, orderNumber, {
             format: 'CODE39',
-            width: 2,
-            height: 50,
+            width: 2.5,
+            height: 60,
             displayValue: true,
-            fontSize: 14,
+            fontSize: 18,
             margin: 5
         });
         barcodeDataUrl = canvas.toDataURL();
@@ -161,14 +161,14 @@ async function generateLabelHTML(order) {
             font-weight: 600;
             padding: 6px;
             width: 148mm;
-            font-size: 11pt;
+            font-size: 13pt;
         }
         
         @media print {
             body {
                 width: 100%;
                 padding: 5px;
-                font-size: 10pt;
+                font-size: 13pt;
             }
         }
         
@@ -191,12 +191,12 @@ async function generateLabelHTML(order) {
         }
         
         .logo {
-            width: 110px;
+            width: 130px;
             height: auto;
         }
         
         .nh-logo {
-            width: 95px;
+            width: 115px;
             height: auto;
         }
         
@@ -206,12 +206,12 @@ async function generateLabelHTML(order) {
         }
         
         .barcode {
-            width: 230px;
+            width: 260px;
             height: auto;
         }
         
         .section-title {
-            font-size: 12pt;
+            font-size: 13pt;
             font-weight: 700;
             margin-bottom: 4px;
         }
@@ -222,7 +222,7 @@ async function generateLabelHTML(order) {
         }
         
         .customer-info {
-            font-size: 11pt;
+            font-size: 13pt;
             font-weight: 600;
             line-height: 1.35;
         }
@@ -297,7 +297,7 @@ async function generateLabelHTML(order) {
             align-items: flex-start;
             justify-content: space-between;
             margin-bottom: 2px;
-            font-size: 11pt;
+            font-size: 13pt;
             font-weight: 600;
             line-height: 1.25;
         }
@@ -329,19 +329,19 @@ async function generateLabelHTML(order) {
         }
         
         .delivery-options {
-            font-size: 11pt;
+            font-size: 13pt;
             font-weight: 600;
             line-height: 1.5;
         }
         
         .checkbox {
             margin-right: 5px;
-            font-size: 14pt;
+            font-size: 16pt;
             font-weight: bold;
         }
         
         .payment-section {
-            font-size: 11pt;
+            font-size: 13pt;
             font-weight: 600;
             line-height: 1.4;
         }
