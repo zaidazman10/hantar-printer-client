@@ -159,7 +159,7 @@ async function generateLabelHTML(order) {
         body { 
             font-family: Arial, Helvetica, sans-serif; 
             font-weight: 600;
-            padding: 6px;
+            padding: 3px;
             width: 148mm;
             font-size: 13pt;
         }
@@ -167,7 +167,7 @@ async function generateLabelHTML(order) {
         @media print {
             body {
                 width: 100%;
-                padding: 5px;
+                padding: 2px;
                 font-size: 13pt;
             }
         }
@@ -180,23 +180,23 @@ async function generateLabelHTML(order) {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 8px;
+            gap: 5px;
+            margin-bottom: 4px;
         }
         
         .logo-section {
             display: flex;
-            gap: 10px;
+            gap: 5px;
             align-items: center;
         }
         
         .logo {
-            width: 130px;
+            width: 150px;
             height: auto;
         }
         
         .nh-logo {
-            width: 115px;
+            width: 135px;
             height: auto;
         }
         
@@ -206,35 +206,35 @@ async function generateLabelHTML(order) {
         }
         
         .barcode {
-            width: 260px;
+            width: 280px;
             height: auto;
         }
         
         .section-title {
             font-size: 13pt;
             font-weight: 700;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         
         .divider {
             border-bottom: 0.5pt solid black;
-            margin: 8px 0;
+            margin: 4px 0;
         }
         
         .customer-info {
             font-size: 13pt;
             font-weight: 600;
-            line-height: 1.35;
+            line-height: 1.2;
         }
         
         .info-row {
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
         
         .customer-row {
             display: flex;
-            gap: 15px;
-            margin-bottom: 8px;
+            gap: 10px;
+            margin-bottom: 4px;
         }
         
         .customer-col-left {
@@ -251,8 +251,8 @@ async function generateLabelHTML(order) {
         .qr-box {
             background: black;
             border: 0.5pt solid black;
-            border-radius: 12px;
-            padding: 8px;
+            border-radius: 8px;
+            padding: 6px;
             display: inline-flex;
             flex-direction: column;
             align-items: center;
@@ -275,7 +275,7 @@ async function generateLabelHTML(order) {
         
         .two-column {
             display: flex;
-            gap: 15px;
+            gap: 10px;
         }
         
         .column-left {
@@ -285,21 +285,21 @@ async function generateLabelHTML(order) {
         .column-right {
             flex: 0.75;
             border-left: 0.5pt solid black;
-            padding-left: 10px;
+            padding-left: 8px;
         }
         
         .items-list {
-            margin: 8px 0;
+            margin: 4px 0;
         }
         
         .item {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
             font-size: 13pt;
             font-weight: 600;
-            line-height: 1.25;
+            line-height: 1.15;
         }
         
         .item-bullet {
@@ -331,7 +331,7 @@ async function generateLabelHTML(order) {
         .delivery-options {
             font-size: 13pt;
             font-weight: 600;
-            line-height: 1.5;
+            line-height: 1.3;
         }
         
         .checkbox {
@@ -343,14 +343,14 @@ async function generateLabelHTML(order) {
         .payment-section {
             font-size: 13pt;
             font-weight: 600;
-            line-height: 1.4;
+            line-height: 1.3;
         }
         
         .cooking-section {
             width: 100%;
             display: flex;
             justify-content: center;
-            padding: 10px 0;
+            padding: 4px 0;
         }
         
         .cooking-instructions-img {
