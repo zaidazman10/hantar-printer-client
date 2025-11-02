@@ -4,9 +4,13 @@ const { exec } = require('child_process');
 const path = require('path');
 const http = require('http');
 const QRCode = require('qrcode');
+const { createCanvas } = require('canvas');
+const JsBarcode = require('jsbarcode');
 
 // Configuration
+// IMPORTANT: Change back to Railway URL before pushing to production
 const API_URL = 'https://hantar-production.up.railway.app/api';
+// const API_URL = 'http://hantar.test/api'; // LOCAL DEVELOPMENT
 const POLL_INTERVAL = 5000; // 5 seconds
 const OUTPUT_DIR = path.join(__dirname, 'labels');
 const LOCAL_SERVER_PORT = 9876;
@@ -57,6 +61,88 @@ async function generateLabelHTML(order) {
         console.error('QR Code generation error:', err);
     }
     
+    // Generate barcode for order number
+    let barcodeDataUrl = '';
+    // Extract date from ISO format (e.g., "2025-11-02T00:00:00.000000Z009" -> "20251102")
+    let dateString = '20251102';
+    try {
+        const canvas = createCanvas();
+        if (order.tarikh) {
+            // Extract YYYY-MM-DD from ISO timestamp
+            const dateMatch = order.tarikh.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (dateMatch) {
+                dateString = dateMatch[1] + dateMatch[2] + dateMatch[3];
+            }
+        }
+        const orderNumber = `${dateString}${String(order.id).padStart(3, '0')}`;
+        JsBarcode(canvas, orderNumber, {
+            format: 'CODE39',
+            width: 2,
+            height: 50,
+            displayValue: true,
+            fontSize: 14,
+            margin: 5
+        });
+        barcodeDataUrl = canvas.toDataURL();
+    } catch (err) {
+        console.error('Barcode generation error:', err);
+    }
+    
+    // Convert images to base64
+    const hantarLogoPath = path.join(__dirname, 'logo-hantar.png');
+    const hantarLogoBase64 = fs.existsSync(hantarLogoPath) 
+        ? `data:image/png;base64,${fs.readFileSync(hantarLogoPath).toString('base64')}`
+        : '';
+    
+    const pusingLogoPath = path.join(__dirname, 'logo-pusing.png');
+    const pusingLogoBase64 = fs.existsSync(pusingLogoPath) 
+        ? `data:image/png;base64,${fs.readFileSync(pusingLogoPath).toString('base64')}`
+        : '';
+    
+    const frozenIconPath = path.join(__dirname, 'frozen-icon.png');
+    const frozenIconBase64 = fs.existsSync(frozenIconPath)
+        ? `data:image/png;base64,${fs.readFileSync(frozenIconPath).toString('base64')}`
+        : '';
+    
+    const scooterPath = path.join(__dirname, 'delivery-scooter.png');
+    const scooterBase64 = fs.existsSync(scooterPath)
+        ? `data:image/png;base64,${fs.readFileSync(scooterPath).toString('base64')}`
+        : '';
+    
+    const wavingEmojiPath = path.join(__dirname, 'waving-emoji.png');
+    const wavingEmojiBase64 = fs.existsSync(wavingEmojiPath)
+        ? `data:image/png;base64,${fs.readFileSync(wavingEmojiPath).toString('base64')}`
+        : '';
+    
+    const fryingPanPath = path.join(__dirname, 'fryingpan.png');
+    const fryingPanBase64 = fs.existsSync(fryingPanPath)
+        ? `data:image/png;base64,${fs.readFileSync(fryingPanPath).toString('base64')}`
+        : '';
+    
+    const airFryerPath = path.join(__dirname, 'icon-airfryer.png');
+    const airFryerBase64 = fs.existsSync(airFryerPath)
+        ? `data:image/png;base64,${fs.readFileSync(airFryerPath).toString('base64')}`
+        : '';
+    
+    const qrOrderPath = path.join(__dirname, 'qr-order.png');
+    const qrOrderBase64 = fs.existsSync(qrOrderPath)
+        ? `data:image/png;base64,${fs.readFileSync(qrOrderPath).toString('base64')}`
+        : '';
+    
+    const cookingInstructionsPath = path.join(__dirname, 'cooking-instructions.png');
+    const cookingInstructionsBase64 = fs.existsSync(cookingInstructionsPath)
+        ? `data:image/png;base64,${fs.readFileSync(cookingInstructionsPath).toString('base64')}`
+        : '';
+    
+    // Format date nicely for display
+    let displayDate = '2/11/2025';
+    if (order.tarikh) {
+        const dateMatch = order.tarikh.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (dateMatch) {
+            displayDate = `${parseInt(dateMatch[3])}/${parseInt(dateMatch[2])}/${dateMatch[1]}`;
+        }
+    }
+    
     return `
 <!DOCTYPE html>
 <html>
@@ -66,178 +152,308 @@ async function generateLabelHTML(order) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         @page {
-            size: 4in auto;
+            size: A6;
             margin: 0;
         }
         
         body { 
-            font-family: Arial, sans-serif; 
-            padding: 20px;
-            width: 4in;
+            font-family: Arial, Helvetica, sans-serif; 
+            font-weight: 600;
+            padding: 8px;
+            width: 148mm;
+            font-size: 9pt;
         }
         
         @media print {
             body {
                 width: 100%;
-                padding: 10px;
+                padding: 5px;
+                font-size: 8.5pt;
             }
         }
-        .label { 
-            border: 8px solid black; 
-            padding: 20px;
+        
+        .label-container {
+            width: 100%;
         }
-        .header { 
-            text-align: center; 
-            font-size: 32px; 
-            font-weight: bold; 
-            border-bottom: 8px solid black; 
-            padding-bottom: 10px; 
-            margin-bottom: 15px;
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 10px;
         }
-        .row { 
-            display: flex; 
-            gap: 20px; 
-            margin-bottom: 10px; 
-            border-bottom: 4px solid black;
-            padding-bottom: 8px;
+        
+        .logo-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
-        .field { flex: 1; }
-        .label-text { font-weight: bold; font-size: 16px; }
-        .value { font-size: 14px; margin-top: 4px; }
-        table { 
-            width: 100%; 
-            border: 4px solid black; 
-            border-collapse: collapse; 
-            margin: 15px 0;
+        
+        .logo {
+            width: 90px;
+            height: auto;
         }
-        th, td { 
-            border: 2px solid black; 
-            padding: 8px; 
+        
+        .nh-logo {
+            width: 80px;
+            height: auto;
+        }
+        
+        .order-number-section {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .barcode {
+            width: 220px;
+            height: auto;
+        }
+        
+        .section-title {
+            font-size: 10pt;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .divider {
+            border-bottom: 0.5pt solid black;
+            margin: 10px 0;
+        }
+        
+        .customer-info {
+            font-size: 9.5pt;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        .info-row {
+            margin-bottom: 3px;
+        }
+        
+        .customer-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .customer-col-left {
+            flex: 1;
+        }
+        
+        .customer-col-right {
+            width: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .qr-box {
+            background: black;
+            border: 0.5pt solid black;
+            border-radius: 12px;
+            padding: 8px;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .qr-code {
+            width: 110px;
+            height: 110px;
+            background: white;
+            padding: 5px;
+            border-radius: 8px;
+        }
+        
+        .qr-text {
+            color: white;
+            font-size: 11pt;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .two-column {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .column-left {
+            flex: 1;
+        }
+        
+        .column-right {
+            flex: 0.7;
+            border-left: 0.5pt solid black;
+            padding-left: 12px;
+        }
+        
+        .items-list {
+            margin: 10px 0;
+        }
+        
+        .item {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 3px;
+            font-size: 9.5pt;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        
+        .item-bullet {
+            margin-right: 8px;
+        }
+        
+        .item-content {
+            display: flex;
+            flex: 1;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .item-name {
+            flex: 0;
+            white-space: nowrap;
+        }
+        
+        .item-colon {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        
+        .item-qty {
+            flex: 1;
             text-align: left;
         }
-        th { 
-            background: #f0f0f0; 
+        
+        .delivery-options {
+            font-size: 9pt;
+            font-weight: 600;
+            line-height: 1.6;
+        }
+        
+        .checkbox {
+            margin-right: 5px;
+            font-size: 14pt;
             font-weight: bold;
         }
-        .payment {
-            border: 4px solid black;
-            padding: 10px;
-            margin-top: 10px;
+        
+        .payment-section {
+            font-size: 9pt;
+            font-weight: 600;
+            line-height: 1.5;
         }
-        .qr-section {
-            text-align: center;
-            margin-top: 15px;
-            padding: 10px;
-            border: 4px solid black;
+        
+        .cooking-section {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 10px 0;
         }
-        .qr-section img {
+        
+        .cooking-instructions-img {
+            width: 100%;
+            height: auto;
             display: block;
-            margin: 10px auto;
-        }
-        .qr-label {
-            font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="label">
-        <div class="header">DELIVERY NOTE</div>
-        
-        <div class="row">
-            <div class="field">
-                <div class="label-text">Nama:</div>
-                <div class="value">${order.nama}</div>
+    <div class="label-container">
+        <!-- Header with Logos and Barcode -->
+        <div class="header">
+            <div class="logo-section">
+                ${hantarLogoBase64 ? `<img src="${hantarLogoBase64}" alt="Hantar" class="logo">` : ''}
+                ${pusingLogoBase64 ? `<img src="${pusingLogoBase64}" alt="Karipap Pusing NH" class="nh-logo">` : ''}
             </div>
-            <div class="field">
-                <div class="label-text">No Fon:</div>
-                <div class="value">${order.no_fon}</div>
+            <div class="order-number-section">
+                ${barcodeDataUrl ? `<img src="${barcodeDataUrl}" alt="Barcode" class="barcode">` : ''}
             </div>
         </div>
         
-        <div class="row">
-            <div class="field">
-                <div class="label-text">Alamat:</div>
-                <div class="value">${order.alamat}</div>
-            </div>
-        </div>
+        <div class="divider"></div>
         
-        <div class="row">
-            <div class="field">
-                <div class="label-text">Kawasan:</div>
-                <div class="value">${order.kawasan || '-'}</div>
-            </div>
-        </div>
-        
-        <div class="row">
-            <div class="field">
-                <div class="label-text">Tarikh:</div>
-                <div class="value">${order.tarikh}</div>
-            </div>
-            <div class="field">
-                <div class="label-text">Masa:</div>
-                <div class="value">${order.masa || '-'}</div>
-            </div>
-            <div class="field">
-                <div class="label-text">Time:</div>
-                <div class="value">${order.time_slot || '-'}</div>
-            </div>
-        </div>
-        
-        ${order.note ? `
-        <div class="row">
-            <div class="field">
-                <div class="label-text">Note:</div>
-                <div class="value">${order.note}</div>
-            </div>
-        </div>
-        ` : ''}
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Order</th>
-                    <th>Kuantiti</th>
-                    <th>Check</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${order.items.map((item, idx) => `
-                    <tr>
-                        <td>${idx + 1}. ${item.name}</td>
-                        <td>${item.quantity || '-'}</td>
-                        <td>${item.checked ? '✓' : ''}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-        
-        <div class="payment">
-            <div class="row" style="border: none;">
-                <div class="field">
-                    <div class="label-text">Jumlah Bayaran:</div>
-                    <div class="value">RM ${parseFloat(order.jumlah_bayaran).toFixed(2)}</div>
-                </div>
-                <div class="field">
-                    <div class="label-text">No Paket:</div>
-                    <div class="value">${order.no_paket || '-'}</div>
+        <!-- Customer Info with QR Code -->
+        <div class="customer-row">
+            <div class="customer-col-left">
+                <div class="section-title">KEPADA :</div>
+                <div class="customer-info">
+                    <div class="info-row">${order.nama}</div>
+                    <div class="info-row">${order.alamat}</div>
+                    ${order.kawasan ? `<div class="info-row">${order.kawasan}</div>` : ''}
+                    <div class="info-row">TEL : ${order.no_fon}</div>
+                    ${order.note ? `<div class="info-row">NOTA : ${order.note}</div>` : ''}
                 </div>
             </div>
-            <div class="row" style="border: none; margin-top: 10px;">
-                <div class="field">
-                    <div class="label-text">Bayaran: ${order.bayaran_status === 'Jelas' ? '☑' : '☐'} Jelas  ${order.bayaran_status === 'Belum' ? '☑' : '☐'} Belum</div>
+            <div class="customer-col-right">
+                ${qrCodeDataUrl ? `
+                <div class="qr-box">
+                    <img src="${qrCodeDataUrl}" alt="QR Code" class="qr-code">
+                    <div class="qr-text">Let's Go</div>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <!-- Items and Date/Time in Two Columns -->
+        <div class="two-column">
+            <div class="column-left">
+                <div class="section-title">MAKLUMAT ITEM :</div>
+                <div class="items-list">
+                    ${order.items.map(item => {
+                        const itemName = item.name;
+                        const qtyText = (item.quantity && item.quantity > 0) 
+                            ? `${item.quantity} PEK` 
+                            : '';
+                        
+                        return `
+                        <div class="item">
+                            <span class="item-bullet">•</span>
+                            <div class="item-content">
+                                <span class="item-name">${itemName}</span>
+                                <span class="item-colon">:</span>
+                                <span class="item-qty">${qtyText}</span>
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+            
+            <div class="column-right">
+                <div class="section-title">TARIKH : ${displayDate}</div>
+                <div class="delivery-options">
+                    <div><span class="checkbox">☐</span>PICK-UP @ P9</div>
+                    <div><span class="checkbox">☐</span>DELIVERY</div>
+                </div>
+                <br>
+                <div class="section-title">MASA :</div>
+                <div class="delivery-options">
+                    <div><span class="checkbox">☐</span>9am-12pm</div>
+                    <div><span class="checkbox">☐</span>2pm-6pm</div>
+                    <div><span class="checkbox">☐</span>7pm-9pm</div>
+                    <div><span class="checkbox">☐</span>_____ selain diatas</div>
                 </div>
             </div>
         </div>
         
-        ${qrCodeDataUrl ? `
-        <div class="qr-section">
-            <div class="qr-label">📍 SCAN FOR LOCATION</div>
-            <img src="${qrCodeDataUrl}" alt="QR Code" width="120" height="120">
-            <div style="font-size: 12px; margin-top: 5px;">Scan to open Google Maps</div>
+        <div class="divider"></div>
+        
+        <!-- Payment Section -->
+        <div class="section-title">MAKLUMAT BAYARAN :</div>
+        <div class="payment-section">
+            <div><span class="checkbox">${order.bayaran_status === 'Jelas' ? '☑' : '☐'}</span>SELESAI PEMBAYARAN.</div>
+            <div><span class="checkbox">${order.bayaran_status === 'Belum' ? '☑' : '☐'}</span>BELUM SELESAI / BTT/QR/COD :</div>
         </div>
-        ` : ''}
+        
+        <!-- Cooking Instructions -->
+        <div class="cooking-section">
+            ${cookingInstructionsBase64 ? `<img src="${cookingInstructionsBase64}" alt="Cooking Instructions" class="cooking-instructions-img">` : ''}
+        </div>
     </div>
 </body>
 </html>
