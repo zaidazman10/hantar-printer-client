@@ -77,11 +77,12 @@ async function generateLabelHTML(order) {
         const orderNumber = `${dateString}${String(order.id).padStart(3, '0')}`;
         JsBarcode(canvas, orderNumber, {
             format: 'CODE39',
-            width: 2.5,
-            height: 60,
+            width: 3,
+            height: 70,
             displayValue: true,
-            fontSize: 18,
-            margin: 5
+            fontSize: 28,
+            margin: 5,
+            fontOptions: 'bold'
         });
         barcodeDataUrl = canvas.toDataURL();
     } catch (err) {
