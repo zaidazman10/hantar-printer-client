@@ -40,6 +40,38 @@ server.listen(LOCAL_SERVER_PORT, () => {
     console.log(`⏱️  Polling every ${POLL_INTERVAL / 1000} seconds\n`);
 });
 
+// Generate checkbox image
+function generateCheckboxImage(checked) {
+    const canvas = createCanvas(20, 20);
+    const ctx = canvas.getContext('2d');
+    
+    // Draw white background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 20, 20);
+    
+    // Draw black border
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(2, 2, 16, 16);
+    
+    // Draw checkmark if checked
+    if (checked) {
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        // Draw checkmark
+        ctx.beginPath();
+        ctx.moveTo(5, 10);
+        ctx.lineTo(8, 14);
+        ctx.lineTo(15, 6);
+        ctx.stroke();
+    }
+    
+    return canvas.toDataURL();
+}
+
 // Generate HTML for label
 async function generateLabelHTML(order) {
     // Generate Google Maps URL
@@ -134,6 +166,22 @@ async function generateLabelHTML(order) {
     const cookingInstructionsBase64 = fs.existsSync(cookingInstructionsPath)
         ? `data:image/png;base64,${fs.readFileSync(cookingInstructionsPath).toString('base64')}`
         : '';
+
+    // Cara Memasak image
+    const caraMemasakPath = path.join(__dirname, 'cara-memasak.png');
+    const caraMemasakBase64 = fs.existsSync(caraMemasakPath)
+        ? `data:image/png;base64,${fs.readFileSync(caraMemasakPath).toString('base64')}`
+        : '';
+
+    // Contact image
+    const contactImgPath = path.join(__dirname, 'contact.png');
+    const contactImgBase64 = fs.existsSync(contactImgPath)
+        ? `data:image/png;base64,${fs.readFileSync(contactImgPath).toString('base64')}`
+        : '';
+    
+    // Format date nicely for display
+    const checkboxEmptyBase64 = generateCheckboxImage(false);
+    const checkboxCheckedBase64 = generateCheckboxImage(true);
     
     // Format date nicely for display
     let displayDate = '2/11/2025';
@@ -159,301 +207,410 @@ async function generateLabelHTML(order) {
         
         body { 
             font-family: Arial, Helvetica, sans-serif; 
-            font-weight: 600;
-            padding: 3px;
-            width: 148mm;
-            font-size: 13pt;
+            font-weight: 700;
+            padding: 6px;
+            width: 148mm; /* A6 landscape width */
+            font-size: 12pt;
+            line-height: 1.15;
         }
         
         @media print {
             body {
                 width: 100%;
-                padding: 2px;
-                font-size: 13pt;
+                padding: 6px;
+                font-size: 12pt;
+                line-height: 1.15;
             }
         }
         
-        .label-container {
-            width: 100%;
-        }
-        
+        /* HEADER SECTION */
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 5px;
             margin-bottom: 4px;
+            gap: 10px;
         }
         
-        .logo-section {
+        .left-logos {
             display: flex;
-            gap: 5px;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .left-logos img {
+            width: 90px;
+            height: auto;
+        }
+        
+        .right-order {
+            text-align: right;
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
             align-items: center;
         }
         
-        .logo {
-            width: 150px;
-            height: auto;
+        .barcode-img {
+            max-width: 100%;
+            height: 70px;
         }
         
-        .nh-logo {
-            width: 135px;
-            height: auto;
+        .divider {
+            border-bottom: 1.5pt solid black;
+            margin: 4px 0;
         }
         
-        .order-number-section {
-            text-align: center;
+        /* CUSTOMER SECTION */
+        .customer-section {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        
+        .customer-left {
             flex: 1;
-        }
-        
-        .barcode {
-            width: 280px;
-            height: auto;
         }
         
         .section-title {
             font-size: 13pt;
-            font-weight: 700;
+            font-weight: 900;
             margin-bottom: 2px;
         }
         
-        .divider {
-            border-bottom: 0.5pt solid black;
-            margin: 4px 0;
-        }
-        
         .customer-info {
-            font-size: 13pt;
-            font-weight: 600;
+            font-size: 12pt;
+            font-weight: 700;
             line-height: 1.2;
         }
         
-        .info-row {
-            margin-bottom: 1px;
-        }
-        
-        .customer-row {
+        .customer-right {
             display: flex;
-            gap: 10px;
-            margin-bottom: 4px;
-        }
-        
-        .customer-col-left {
-            flex: 1;
-        }
-        
-        .customer-col-right {
-            width: 180px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-        }
-        
-        .qr-box {
-            background: black;
-            border: 0.5pt solid black;
-            border-radius: 8px;
-            padding: 6px;
-            display: inline-flex;
             flex-direction: column;
             align-items: center;
+            gap: 4px;
         }
         
-        .qr-code {
+        .qr-container {
+            background: black;
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .qr-img {
             width: 110px;
             height: 110px;
             background: white;
+            border-radius: 6px;
             padding: 5px;
-            border-radius: 8px;
         }
         
-        .qr-text {
+        .qr-label {
             color: white;
-            font-size: 11pt;
-            font-weight: bold;
-            margin-top: 5px;
+            font-size: 12pt;
+            font-weight: 900;
+            margin-top: 4px;
         }
         
-        .two-column {
+        .scooter-img {
+            width: 120px;
+            height: auto;
+        }
+        
+        /* MAIN CONTENT - TWO COLUMNS */
+        .main-content {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            margin-bottom: 4px;
         }
         
-        .column-left {
+        .left-col {
+            flex: 1.2;
+        }
+        
+        .right-col {
             flex: 1;
-        }
-        
-        .column-right {
-            flex: 0.75;
-            border-left: 0.5pt solid black;
+            border-left: 1.5pt solid black;
             padding-left: 8px;
         }
         
+        /* ITEMS LIST */
         .items-list {
-            margin: 4px 0;
+            margin-top: 2px;
+            font-size: 12pt;
+            font-weight: 700;
         }
         
-        .item {
+        .item-row {
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 1px;
-            font-size: 13pt;
-            font-weight: 600;
-            line-height: 1.15;
+            margin-bottom: 2px;
         }
         
         .item-bullet {
             margin-right: 8px;
         }
         
-        .item-content {
+        .item-details {
             display: flex;
             flex: 1;
             justify-content: space-between;
-            align-items: center;
         }
         
         .item-name {
-            flex: 0;
-            white-space: nowrap;
-        }
-        
-        .item-colon {
-            margin-left: 5px;
-            margin-right: 5px;
+            flex: 0 0 auto;
         }
         
         .item-qty {
-            flex: 1;
-            text-align: left;
+            margin-left: auto;
+            padding-left: 10px;
         }
         
-        .delivery-options {
-            font-size: 13pt;
-            font-weight: 600;
+        /* DELIVERY OPTIONS */
+        .delivery-date {
+            font-size: 14pt;
+            font-weight: 900;
+            margin-bottom: 3px;
+        }
+        
+        .option-list {
+            font-size: 12pt;
+            font-weight: 700;
             line-height: 1.3;
+        }
+        
+        .option-item {
+            margin-bottom: 2px;
         }
         
         .checkbox {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 1.5pt solid black;
             margin-right: 5px;
-            font-size: 16pt;
-            font-weight: bold;
+            vertical-align: middle;
+        }
+        .time-section {
+            margin-top: 8px;
         }
         
+        /* PAYMENT SECTION */
         .payment-section {
-            font-size: 13pt;
-            font-weight: 600;
-            line-height: 1.3;
+            margin-bottom: 4px;
         }
         
-        .cooking-section {
-            width: 100%;
+        .payment-option {
+            font-size: 12pt;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        
+        /* FOOTER ROW */
+        .footer-row {
+            border-top: 1.5pt solid black;
+            padding-top: 6px;
             display: flex;
-            justify-content: center;
-            padding: 4px 0;
+            gap: 10px;
+            align-items: flex-start;
         }
         
-        .cooking-instructions-img {
+        .footer-left {
+            flex: 1;
+        }
+        
+        .footer-left img {
             width: 100%;
             height: auto;
             display: block;
         }
+        
+        .footer-right {
+            flex: 1;
+            border-left: 1.5pt solid black;
+            padding-left: 10px;
+        }
+        
+        .footer-right img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .cooking-section {
+            padding-top: 0;
+        }
+        
+        .cooking-title {
+            font-size: 14pt;
+            font-weight: 900;
+            text-decoration: underline;
+            margin-bottom: 4px;
+        }
+        
+        .cooking-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .cooking-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 12pt;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        
+        .cooking-icon {
+            width: 64px;
+            height: 64px;
+            flex-shrink: 0;
+        }
+        
+        .cooking-text {
+            flex: 1;
+            padding-top: 8px;
+        }
+        
+        .cooking-temp {
+            text-decoration: underline;
+        }
+        
+        /* FOOTER CONTACT */
+        .footer-contact {
+            margin-top: 8px;
+            border-top: 2pt solid black;
+            padding-top: 6px;
+        }
+        
+        .footer-title {
+            font-size: 14pt;
+            font-weight: 900;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .emoji-img {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .contact-info {
+            font-size: 12pt;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        
+        .qr-order {
+            float: right;
+            width: 100px;
+            height: auto;
+            margin-left: 10px;
+        }
+        
+        .order-label {
+            text-align: center;
+            font-size: 11pt;
+            font-weight: 900;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
-    <div class="label-container">
-        <!-- Header with Logos and Barcode -->
-        <div class="header">
-            <div class="logo-section">
-                ${hantarLogoBase64 ? `<img src="${hantarLogoBase64}" alt="Hantar" class="logo">` : ''}
-                ${pusingLogoBase64 ? `<img src="${pusingLogoBase64}" alt="Karipap Pusing NH" class="nh-logo">` : ''}
+    <!-- HEADER: Logos + Order Number -->
+    <div class="header">
+        <div class="left-logos">
+            ${hantarLogoBase64 ? `<img src="${hantarLogoBase64}" alt="Hantar">` : ''}
+            ${pusingLogoBase64 ? `<img src="${pusingLogoBase64}" alt="NH">` : ''}
+        </div>
+        <div class="right-order">
+            ${barcodeDataUrl ? `<img src="${barcodeDataUrl}" class="barcode-img" alt="Barcode">` : ''}
+        </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <!-- CUSTOMER INFO + QR CODE -->
+    <div class="customer-section">
+        <div class="customer-left">
+            <div class="section-title">KEPADA :</div>
+            <div class="customer-info">
+                <div>${order.nama}</div>
+                <div>${order.alamat}</div>
+                ${order.kawasan ? `<div>${order.kawasan}</div>` : ''}
+                ${order.poskod ? `<div>POSKOD: ${order.poskod}</div>` : ''}
+                <div>TEL : ${order.no_fon}</div>
+                ${order.note ? `<div>NOTA :</div><div>${order.note}</div>` : ''}
             </div>
-            <div class="order-number-section">
-                ${barcodeDataUrl ? `<img src="${barcodeDataUrl}" alt="Barcode" class="barcode">` : ''}
+        </div>
+        <div class="customer-right">
+            ${qrCodeDataUrl ? `
+            <div class="qr-container">
+                <img src="${qrCodeDataUrl}" class="qr-img" alt="Map QR">
+                <div class="qr-label">Let's Go</div>
+            </div>
+            ` : ''}
+        </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <!-- MAIN CONTENT: ITEMS + DELIVERY INFO -->
+    <div class="main-content">
+        <div class="left-col">
+            <div class="section-title">MAKLUMAT ITEM :</div>
+            <div class="items-list">
+                ${order.items.map(item => `
+                <div class="item-row">
+                    <span class="item-bullet">•</span>
+                    <div class="item-details">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-qty">: ${item.quantity ? item.quantity + ' PEK' : ''}</span>
+                    </div>
+                </div>
+                `).join('')}
             </div>
         </div>
         
-        <div class="divider"></div>
-        
-        <!-- Customer Info with QR Code -->
-        <div class="customer-row">
-            <div class="customer-col-left">
-                <div class="section-title">KEPADA :</div>
-                <div class="customer-info">
-                    <div class="info-row">${order.nama}</div>
-                    <div class="info-row">${order.alamat}</div>
-                    ${order.kawasan ? `<div class="info-row">${order.kawasan}</div>` : ''}
-                    <div class="info-row">TEL : ${order.no_fon}</div>
-                    ${order.note ? `<div class="info-row">NOTA : ${order.note}</div>` : ''}
-                </div>
-            </div>
-            <div class="customer-col-right">
-                ${qrCodeDataUrl ? `
-                <div class="qr-box">
-                    <img src="${qrCodeDataUrl}" alt="QR Code" class="qr-code">
-                    <div class="qr-text">Let's Go</div>
-                </div>
-                ` : ''}
-            </div>
-        </div>
-        
-        <div class="divider"></div>
-        
-        <!-- Items and Date/Time in Two Columns -->
-        <div class="two-column">
-            <div class="column-left">
-                <div class="section-title">MAKLUMAT ITEM :</div>
-                <div class="items-list">
-                    ${order.items.map(item => {
-                        const itemName = item.name;
-                        const qtyText = (item.quantity && item.quantity > 0) 
-                            ? `${item.quantity} PEK` 
-                            : '';
-                        
-                        return `
-                        <div class="item">
-                            <span class="item-bullet">•</span>
-                            <div class="item-content">
-                                <span class="item-name">${itemName}</span>
-                                <span class="item-colon">:</span>
-                                <span class="item-qty">${qtyText}</span>
-                            </div>
-                        </div>
-                        `;
-                    }).join('')}
-                </div>
+        <div class="right-col">
+            <div class="delivery-date">TARIKH : ${displayDate}</div>
+            <div class="option-list">
+                <div class="option-item"><img src="${checkboxEmptyBase64}" class="checkbox" alt="">PICK-UP @ P9</div>
+                <div class="option-item"><img src="${checkboxEmptyBase64}" class="checkbox" alt="">DELIVERY</div>
             </div>
             
-            <div class="column-right">
-                <div class="section-title">TARIKH : ${displayDate}</div>
-                <div class="delivery-options">
-                    <div><span class="checkbox">☐</span>PICK-UP @ P9</div>
-                    <div><span class="checkbox">☐</span>DELIVERY</div>
-                </div>
-                <br>
+            <div class="time-section">
                 <div class="section-title">MASA :</div>
-                <div class="delivery-options">
-                    <div><span class="checkbox">☐</span>9am-12pm</div>
-                    <div><span class="checkbox">☐</span>2pm-6pm</div>
-                    <div><span class="checkbox">☐</span>7pm-9pm</div>
-                    <div><span class="checkbox">☐</span>_____ selain diatas</div>
+                <div class="option-list">
+                    <div class="option-item"><img src="${order.time_slot === '9am-12pm' ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">9am-12pm</div>
+                    <div class="option-item"><img src="${order.time_slot === '2pm-6pm' ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">2pm-6pm</div>
+                    <div class="option-item"><img src="${order.time_slot === '7pm-9pm' ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">7pm-9pm</div>
+                    <div class="option-item"><img src="${order.time_slot && !['9am-12pm', '2pm-6pm', '7pm-9pm'].includes(order.time_slot) ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">_________ selain diatas</div>
                 </div>
             </div>
         </div>
-        
-        <div class="divider"></div>
-        
-        <!-- Payment Section -->
+    </div>
+    
+    <div class="divider"></div>
+    
+    <!-- PAYMENT SECTION -->
+    <div class="payment-section">
         <div class="section-title">MAKLUMAT BAYARAN :</div>
-        <div class="payment-section">
-            <div><span class="checkbox">${order.bayaran_status === 'Jelas' ? '☑' : '☐'}</span>SELESAI PEMBAYARAN.</div>
-            <div><span class="checkbox">${order.bayaran_status === 'Belum' ? '☑' : '☐'}</span>BELUM SELESAI / BTT/QR/COD :</div>
+        <div class="payment-option"><img src="${order.bayaran_status === 'Selesai' || order.bayaran_status === 'Jelas' ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">SELESAI PEMBAYARAN.</div>
+        <div class="payment-option"><img src="${order.bayaran_status === 'Belum' ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">BELUM SELESAI / BTT/QR/COD :</div>
+    </div>
+    
+    <!-- FOOTER: Cooking (left) + Contact (right) -->
+    <div class="footer-row">
+        <div class="footer-left">
+            ${caraMemasakBase64 ? `<img src="${caraMemasakBase64}" alt="Cara Memasak">` : ''}
         </div>
-        
-        <!-- Cooking Instructions -->
-        <div class="cooking-section">
-            ${cookingInstructionsBase64 ? `<img src="${cookingInstructionsBase64}" alt="Cooking Instructions" class="cooking-instructions-img">` : ''}
+        <div class="footer-right">
+            ${contactImgBase64 ? `<img src="${contactImgBase64}" alt="Contact">` : ''}
         </div>
     </div>
 </body>
