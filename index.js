@@ -9,8 +9,8 @@ const JsBarcode = require('jsbarcode');
 
 // Configuration
 // IMPORTANT: Change back to Railway URL before pushing to production
-const API_URL = 'https://hantar-production.up.railway.app/api';
-// const API_URL = 'http://hantar.test/api'; // LOCAL DEVELOPMENT
+// const API_URL = 'https://hantar-production.up.railway.app/api';
+const API_URL = 'http://hantar.test/api'; // LOCAL DEVELOPMENT
 const POLL_INTERVAL = 5000; // 5 seconds
 const OUTPUT_DIR = path.join(__dirname, 'labels');
 const LOCAL_SERVER_PORT = 9876;
@@ -589,7 +589,7 @@ async function generateLabelHTML(order) {
                     <div class="option-item"><img src="${order.time_slot === '9am-12pm' ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">9am-12pm</div>
                     <div class="option-item"><img src="${order.time_slot === '2pm-6pm' ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">2pm-6pm</div>
                     <div class="option-item"><img src="${order.time_slot === '7pm-9pm' ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">7pm-9pm</div>
-                    <div class="option-item"><img src="${order.time_slot && !['9am-12pm', '2pm-6pm', '7pm-9pm'].includes(order.time_slot) ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">_________ selain diatas</div>
+                    <div class="option-item"><img src="${order.time_slot && !['9am-12pm', '2pm-6pm', '7pm-9pm'].includes(order.time_slot) ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">${order.time_slot && !['9am-12pm', '2pm-6pm', '7pm-9pm'].includes(order.time_slot) ? order.time_slot : '_________'} selain diatas</div>
                 </div>
             </div>
         </div>
