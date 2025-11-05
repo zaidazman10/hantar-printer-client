@@ -8,9 +8,8 @@ const { createCanvas } = require('canvas');
 const JsBarcode = require('jsbarcode');
 
 // Configuration
-// IMPORTANT: Change back to Railway URL before pushing to production
-// const API_URL = 'https://hantar-production.up.railway.app/api';
-const API_URL = 'http://hantar.test/api'; // LOCAL DEVELOPMENT
+const API_URL = 'https://hantar-production.up.railway.app/api';
+// const API_URL = 'http://hantar.test/api'; // LOCAL DEVELOPMENT
 const POLL_INTERVAL = 5000; // 5 seconds
 const OUTPUT_DIR = path.join(__dirname, 'labels');
 const LOCAL_SERVER_PORT = 9876;
