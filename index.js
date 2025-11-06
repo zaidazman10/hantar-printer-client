@@ -8,8 +8,8 @@ const { createCanvas } = require('canvas');
 const JsBarcode = require('jsbarcode');
 
 // Configuration
-const API_URL = 'https://hantar-production.up.railway.app/api';
-// const API_URL = 'http://hantar.test/api'; // LOCAL DEVELOPMENT
+// const API_URL = 'https://hantar-production.up.railway.app/api';
+const API_URL = 'http://hantar.test/api'; // LOCAL DEVELOPMENT
 const POLL_INTERVAL = 5000; // 5 seconds
 const OUTPUT_DIR = path.join(__dirname, 'labels');
 const LOCAL_SERVER_PORT = 9876;
@@ -200,25 +200,44 @@ async function generateLabelHTML(order) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         @page {
-            size: A6;
+            size: A6 portrait;
             margin: 0;
         }
         
-        body { 
+        html, body { 
             font-family: Arial, Helvetica, sans-serif; 
             font-weight: 700;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
             padding: 6px;
-            width: 148mm; /* A6 landscape width */
+            width: 105mm;
+            height: 148mm;
             font-size: 12pt;
             line-height: 1.15;
         }
         
         @media print {
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
             body {
-                width: 100%;
-                padding: 6px;
-                font-size: 12pt;
-                line-height: 1.15;
+                width: 105mm !important;
+                height: 148mm !important;
+                padding: 6px !important;
+                font-size: 12pt !important;
+                line-height: 1.15 !important;
+                transform: none !important;
+                zoom: 1 !important;
+            }
+            
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
         
@@ -578,8 +597,8 @@ async function generateLabelHTML(order) {
         <div class="right-col">
             <div class="delivery-date">TARIKH : ${displayDate}</div>
             <div class="option-list">
-                <div class="option-item"><img src="${checkboxEmptyBase64}" class="checkbox" alt="">PICK-UP @ P9</div>
-                <div class="option-item"><img src="${checkboxEmptyBase64}" class="checkbox" alt="">DELIVERY</div>
+                <div class="option-item"><img src="${order.delivery_method === 'pickup' ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">PICK-UP @ P9</div>
+                <div class="option-item"><img src="${order.delivery_method === 'delivery' || !order.delivery_method ? checkboxCheckedBase64 : checkboxEmptyBase64}" class="checkbox" alt="">DELIVERY</div>
             </div>
             
             <div class="time-section">
