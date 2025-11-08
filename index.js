@@ -669,8 +669,9 @@ async function printLabel(order) {
             if (fs.existsSync(chromePath)) {
                 const pdfPath = filepath.replace('.html', '.pdf');
                 
-                // Generate PDF from HTML
-                const pdfCmd = `"${chromePath}" --headless --disable-gpu --print-to-pdf="${pdfPath}" "${localUrl}"`;
+                // Generate PDF from HTML with A6 page size (105mm x 148mm)
+                // Chrome respects CSS @page size: A6 portrait rule
+                const pdfCmd = `"${chromePath}" --headless --disable-gpu --print-to-pdf="${pdfPath}" --print-to-pdf-margin=0 --virtual-time-budget=10000 "${localUrl}"`
                 
                 exec(pdfCmd, (error, stdout, stderr) => {
                     if (error) {
