@@ -211,11 +211,10 @@ async function generateLabelHTML(order) {
         }
         
         body {
-            padding: 6px;
+            padding: 2px;
             width: 105mm;
-            height: 148mm;
-            font-size: 12pt;
-            line-height: 1.15;
+            font-size: 9pt;
+            line-height: 1.05;
         }
         
         @media print {
@@ -257,7 +256,7 @@ async function generateLabelHTML(order) {
         }
         
         .left-logos img {
-            width: 90px;
+            width: 70px;
             height: auto;
         }
         
@@ -276,14 +275,14 @@ async function generateLabelHTML(order) {
         
         .divider {
             border-bottom: 1.5pt solid black;
-            margin: 4px 0;
+            margin: 2px 0;
         }
         
         /* CUSTOMER SECTION */
         .customer-section {
             display: flex;
-            gap: 8px;
-            margin-bottom: 4px;
+            gap: 6px;
+            margin-bottom: 2px;
         }
         
         .customer-left {
@@ -291,15 +290,15 @@ async function generateLabelHTML(order) {
         }
         
         .section-title {
-            font-size: 13pt;
+            font-size: 11pt;
             font-weight: 900;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
         
         .customer-info {
-            font-size: 12pt;
+            font-size: 10pt;
             font-weight: 700;
-            line-height: 1.2;
+            line-height: 1.1;
         }
         
         .customer-right {
@@ -317,18 +316,18 @@ async function generateLabelHTML(order) {
         }
         
         .qr-img {
-            width: 110px;
-            height: 110px;
+            width: 75px;
+            height: 75px;
             background: white;
-            border-radius: 6px;
-            padding: 5px;
+            border-radius: 4px;
+            padding: 2px;
         }
         
         .qr-label {
             color: white;
-            font-size: 12pt;
+            font-size: 10pt;
             font-weight: 900;
-            margin-top: 4px;
+            margin-top: 2px;
         }
         
         .scooter-img {
@@ -339,8 +338,8 @@ async function generateLabelHTML(order) {
         /* MAIN CONTENT - TWO COLUMNS */
         .main-content {
             display: flex;
-            gap: 8px;
-            margin-bottom: 4px;
+            gap: 6px;
+            margin-bottom: 2px;
         }
         
         .left-col {
@@ -355,50 +354,53 @@ async function generateLabelHTML(order) {
         
         /* ITEMS LIST */
         .items-list {
-            margin-top: 2px;
-            font-size: 12pt;
+            margin-top: 1px;
+            font-size: 9pt;
             font-weight: 700;
         }
         
         .item-row {
             display: flex;
-            margin-bottom: 2px;
+            margin-bottom: 0.5px;
         }
         
         .item-bullet {
-            margin-right: 8px;
+            margin-right: 6px;
+            flex-shrink: 0;
         }
         
         .item-details {
             display: flex;
             flex: 1;
             justify-content: space-between;
+            gap: 4px;
         }
         
         .item-name {
-            flex: 0 0 auto;
+            flex: 1;
+            min-width: 0;
         }
         
         .item-qty {
-            margin-left: auto;
-            padding-left: 10px;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
         
         /* DELIVERY OPTIONS */
         .delivery-date {
-            font-size: 14pt;
+            font-size: 11pt;
             font-weight: 900;
-            margin-bottom: 3px;
+            margin-bottom: 1px;
         }
         
         .option-list {
-            font-size: 12pt;
+            font-size: 9pt;
             font-weight: 700;
-            line-height: 1.3;
+            line-height: 1.1;
         }
         
         .option-item {
-            margin-bottom: 2px;
+            margin-bottom: 0.5px;
         }
         
         .checkbox {
@@ -410,26 +412,26 @@ async function generateLabelHTML(order) {
             vertical-align: middle;
         }
         .time-section {
-            margin-top: 8px;
+            margin-top: 1px;
         }
         
         /* PAYMENT SECTION */
         .payment-section {
-            margin-bottom: 4px;
+            margin-bottom: 1px;
         }
         
         .payment-option {
-            font-size: 12pt;
+            font-size: 10pt;
             font-weight: 700;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
         
         /* FOOTER ROW */
         .footer-row {
             border-top: 1.5pt solid black;
-            padding-top: 6px;
+            padding-top: 2px;
             display: flex;
-            gap: 10px;
+            gap: 6px;
             align-items: flex-start;
         }
         
@@ -459,30 +461,30 @@ async function generateLabelHTML(order) {
         }
         
         .cooking-title {
-            font-size: 14pt;
+            font-size: 11pt;
             font-weight: 900;
             text-decoration: underline;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         
         .cooking-steps {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 4px;
         }
         
         .cooking-step {
             display: flex;
             align-items: flex-start;
-            gap: 8px;
-            font-size: 12pt;
+            gap: 6px;
+            font-size: 9pt;
             font-weight: 700;
-            line-height: 1.2;
+            line-height: 1.1;
         }
         
         .cooking-icon {
-            width: 64px;
-            height: 64px;
+            width: 40px;
+            height: 40px;
             flex-shrink: 0;
         }
         
@@ -497,18 +499,18 @@ async function generateLabelHTML(order) {
         
         /* FOOTER CONTACT */
         .footer-contact {
-            margin-top: 8px;
+            margin-top: 2px;
             border-top: 2pt solid black;
-            padding-top: 6px;
+            padding-top: 2px;
         }
         
         .footer-title {
-            font-size: 14pt;
+            font-size: 11pt;
             font-weight: 900;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
         
         .emoji-img {
@@ -517,9 +519,9 @@ async function generateLabelHTML(order) {
         }
         
         .contact-info {
-            font-size: 12pt;
+            font-size: 9pt;
             font-weight: 700;
-            line-height: 1.2;
+            line-height: 1.1;
         }
         
         .qr-order {
