@@ -688,7 +688,7 @@ async function printLabel(order) {
                         for (const sumatraPath of sumatraPaths) {
                             if (fs.existsSync(sumatraPath)) {
                                 // Silent print with SumatraPDF
-                                exec(`"${sumatraPath}" -print-to-default -silent -print-settings "paper=A6,noscale" "${pdfPath}"`, (err) => {
+                                exec(`"${sumatraPath}" -print-to-default -silent -print-settings "paper=A4,noscale" "${pdfPath}"`, (err) => {
                                     if (err) {
                                         console.log(`  ⚠️  SumatraPDF print failed: ${err.message}`);
                                         exec(`start "" "${pdfPath}"`);
