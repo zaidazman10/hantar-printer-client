@@ -199,8 +199,8 @@ async function generateLabelHTML(order) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         @page {
-            size: A6 portrait;
-            margin: 0;
+            size: 100mm 150mm; 
+    	    margin: 0;
         }
         
         html, body { 
