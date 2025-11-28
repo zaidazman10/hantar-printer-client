@@ -9,9 +9,13 @@ const JsBarcode = require('jsbarcode');
 
 // Configuration
 const API_URL = 'https://hantar-production.up.railway.app/api';
+const API_TOKEN = process.env.API_TOKEN || '76c01967f47a090d67debc73dc2d37e4e31285ce7d5f0fa24f09b77a03539c3e';
 const POLL_INTERVAL = 5000; // 5 seconds
 const OUTPUT_DIR = path.join(__dirname, 'labels');
 const LOCAL_SERVER_PORT = 9876;
+
+// Configure default axios headers
+axios.defaults.headers.common['X-API-TOKEN'] = API_TOKEN;
 
 // Create output directory if it doesn't exist
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -21,7 +25,7 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 // Simple HTTP server to serve label files
 const server = http.createServer((req, res) => {
     const filePath = path.join(OUTPUT_DIR, path.basename(req.url));
-    
+
     if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(fs.readFileSync(filePath));
@@ -42,23 +46,23 @@ server.listen(LOCAL_SERVER_PORT, () => {
 function generateCheckboxImage(checked) {
     const canvas = createCanvas(20, 20);
     const ctx = canvas.getContext('2d');
-    
+
     // Draw white background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, 20, 20);
-    
+
     // Draw black border
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2;
     ctx.strokeRect(2, 2, 16, 16);
-    
+
     // Draw checkmark if checked
     if (checked) {
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        
+
         // Draw checkmark
         ctx.beginPath();
         ctx.moveTo(5, 10);
@@ -66,7 +70,7 @@ function generateCheckboxImage(checked) {
         ctx.lineTo(15, 6);
         ctx.stroke();
     }
-    
+
     return canvas.toDataURL();
 }
 
@@ -75,7 +79,7 @@ async function generateLabelHTML(order) {
     // Generate Google Maps URL
     const fullAddress = `${order.alamat}${order.kawasan ? ', ' + order.kawasan : ''}`;
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
-    
+
     // Generate QR code as data URL
     let qrCodeDataUrl = '';
     try {
@@ -90,7 +94,7 @@ async function generateLabelHTML(order) {
     } catch (err) {
         console.error('QR Code generation error:', err);
     }
-    
+
     // Generate barcode for order number
     let barcodeDataUrl = '';
     // Extract date from ISO format (e.g., "2025-11-02T00:00:00.000000Z009" -> "20251102")
@@ -118,48 +122,48 @@ async function generateLabelHTML(order) {
     } catch (err) {
         console.error('Barcode generation error:', err);
     }
-    
+
     // Convert images to base64
     const hantarLogoPath = path.join(__dirname, 'logo-hantar.png');
-    const hantarLogoBase64 = fs.existsSync(hantarLogoPath) 
+    const hantarLogoBase64 = fs.existsSync(hantarLogoPath)
         ? `data:image/png;base64,${fs.readFileSync(hantarLogoPath).toString('base64')}`
         : '';
-    
+
     const pusingLogoPath = path.join(__dirname, 'logo-pusing.png');
-    const pusingLogoBase64 = fs.existsSync(pusingLogoPath) 
+    const pusingLogoBase64 = fs.existsSync(pusingLogoPath)
         ? `data:image/png;base64,${fs.readFileSync(pusingLogoPath).toString('base64')}`
         : '';
-    
+
     const frozenIconPath = path.join(__dirname, 'frozen-icon.png');
     const frozenIconBase64 = fs.existsSync(frozenIconPath)
         ? `data:image/png;base64,${fs.readFileSync(frozenIconPath).toString('base64')}`
         : '';
-    
+
     const scooterPath = path.join(__dirname, 'delivery-scooter.png');
     const scooterBase64 = fs.existsSync(scooterPath)
         ? `data:image/png;base64,${fs.readFileSync(scooterPath).toString('base64')}`
         : '';
-    
+
     const wavingEmojiPath = path.join(__dirname, 'waving-emoji.png');
     const wavingEmojiBase64 = fs.existsSync(wavingEmojiPath)
         ? `data:image/png;base64,${fs.readFileSync(wavingEmojiPath).toString('base64')}`
         : '';
-    
+
     const fryingPanPath = path.join(__dirname, 'fryingpan.png');
     const fryingPanBase64 = fs.existsSync(fryingPanPath)
         ? `data:image/png;base64,${fs.readFileSync(fryingPanPath).toString('base64')}`
         : '';
-    
+
     const airFryerPath = path.join(__dirname, 'icon-airfryer.png');
     const airFryerBase64 = fs.existsSync(airFryerPath)
         ? `data:image/png;base64,${fs.readFileSync(airFryerPath).toString('base64')}`
         : '';
-    
+
     const qrOrderPath = path.join(__dirname, 'qr-order.png');
     const qrOrderBase64 = fs.existsSync(qrOrderPath)
         ? `data:image/png;base64,${fs.readFileSync(qrOrderPath).toString('base64')}`
         : '';
-    
+
     const cookingInstructionsPath = path.join(__dirname, 'cooking-instructions.png');
     const cookingInstructionsBase64 = fs.existsSync(cookingInstructionsPath)
         ? `data:image/png;base64,${fs.readFileSync(cookingInstructionsPath).toString('base64')}`
@@ -176,11 +180,11 @@ async function generateLabelHTML(order) {
     const contactImgBase64 = fs.existsSync(contactImgPath)
         ? `data:image/png;base64,${fs.readFileSync(contactImgPath).toString('base64')}`
         : '';
-    
+
     // Format date nicely for display
     const checkboxEmptyBase64 = generateCheckboxImage(false);
     const checkboxCheckedBase64 = generateCheckboxImage(true);
-    
+
     // Format date nicely for display
     let displayDate = '2/11/2025';
     if (order.tarikh) {
@@ -189,7 +193,7 @@ async function generateLabelHTML(order) {
             displayDate = `${parseInt(dateMatch[3])}/${parseInt(dateMatch[2])}/${dateMatch[1]}`;
         }
     }
-    
+
     return `
 <!DOCTYPE html>
 <html>
@@ -641,15 +645,15 @@ async function generateLabelHTML(order) {
 async function printLabel(order) {
     const filename = `order-${order.id}-${Date.now()}.html`;
     const filepath = path.join(OUTPUT_DIR, filename);
-    
+
     const html = await generateLabelHTML(order);
     fs.writeFileSync(filepath, html);
-    
+
     console.log(`  💾 Label saved: ${filename}`);
-    
+
     // Auto-print directly to default printer
     const localUrl = `http://localhost:${LOCAL_SERVER_PORT}/${filename}`;
-    
+
     if (process.platform === 'win32') {
         // Method 1: Try Chrome to generate PDF first
         const chromePaths = [
@@ -657,22 +661,22 @@ async function printLabel(order) {
             'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
             `${process.env.LOCALAPPDATA}\\Google\\Chrome\\Application\\chrome.exe`
         ];
-        
+
         const sumatraPaths = [
             'C:\\Program Files\\SumatraPDF\\SumatraPDF.exe',
             'C:\\Program Files (x86)\\SumatraPDF\\SumatraPDF.exe',
             `${process.env.LOCALAPPDATA}\\Programs\\SumatraPDF\\SumatraPDF.exe`
         ];
-        
+
         let chromeFound = false;
         for (const chromePath of chromePaths) {
             if (fs.existsSync(chromePath)) {
                 const pdfPath = filepath.replace('.html', '.pdf');
-                
+
                 // Generate PDF from HTML with A6 page size (105mm x 148mm)
                 // Chrome respects CSS @page size: A6 portrait rule
                 const pdfCmd = `"${chromePath}" --headless --disable-gpu --print-to-pdf="${pdfPath}" --print-to-pdf-margin=0 --virtual-time-budget=10000 "${localUrl}"`
-                
+
                 exec(pdfCmd, (error, stdout, stderr) => {
                     if (error) {
                         console.log(`  ⚠️  PDF generation failed: ${error.message}`);
@@ -680,7 +684,7 @@ async function printLabel(order) {
                         exec(`start "" "${filepath}"`);
                         return;
                     }
-                    
+
                     // Wait for PDF to be written
                     setTimeout(() => {
                         // Try SumatraPDF for silent printing
@@ -700,7 +704,7 @@ async function printLabel(order) {
                                 break;
                             }
                         }
-                        
+
                         if (!sumatraFound) {
                             // Fallback: open PDF in default viewer
                             console.log(`  📝 PDF generated, opening for printing...`);
@@ -712,7 +716,7 @@ async function printLabel(order) {
                 break;
             }
         }
-        
+
         if (!chromeFound) {
             // Fallback: open HTML in default browser
             console.log(`  🔗 Chrome not found, opening in default browser...`);
@@ -735,7 +739,7 @@ async function printLabel(order) {
             }
         });
     }
-    
+
     return filepath;
 }
 
@@ -754,15 +758,15 @@ async function checkAndPrint() {
     try {
         const response = await axios.get(`${API_URL}/print-jobs/pending`);
         const { count, orders } = response.data;
-        
+
         if (count > 0) {
             console.log(`\n📋 Found ${count} pending order(s)`);
-            
+
             for (const order of orders) {
                 console.log(`\n🖨️  Processing Order #${order.id} - ${order.nama}`);
                 await printLabel(order);
                 await markOrderPrinted(order.id);
-                
+
                 // Wait a bit between prints
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
