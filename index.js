@@ -8,7 +8,7 @@ const { createCanvas } = require('canvas');
 const JsBarcode = require('jsbarcode');
 
 // Configuration
-const API_URL = 'https://hantar-production.up.railway.app/api';
+const API_URL = 'http://hantar.test/api';
 const API_TOKEN = process.env.API_TOKEN || '76c01967f47a090d67debc73dc2d37e4e31285ce7d5f0fa24f09b77a03539c3e';
 const POLL_INTERVAL = 5000; // 5 seconds
 const OUTPUT_DIR = path.join(__dirname, 'labels');
@@ -24,6 +24,39 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 
 // Simple HTTP server to serve label files
 const server = http.createServer((req, res) => {
+    console.log(`📡 [Incoming Request] ${req.method} ${req.url}`);
+
+    // Enable CORS for web UI communication
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        res.end();
+        return;
+    }
+
+    // Handle Direct Print Requests for Labels
+    if (req.method === 'POST' && req.url === '/print-label') {
+        let body = '';
+        req.on('data', chunk => { body += chunk.toString(); });
+        req.on('end', async () => {
+            try {
+                const order = JSON.parse(body);
+                console.log(`\n📥 Received manual reprint request for Label Order #${order.id}`);
+                await printLabel(order);
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, message: 'Label print job queued' }));
+            } catch (err) {
+                console.error('Error processing label print request:', err);
+                res.writeHead(400);
+                res.end(JSON.stringify({ success: false, error: 'Invalid order data' }));
+            }
+        });
+        return;
+    }
+
     const filePath = path.join(OUTPUT_DIR, path.basename(req.url));
 
     if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
