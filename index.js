@@ -14,6 +14,11 @@ const POLL_INTERVAL = 5000; // 5 seconds
 const OUTPUT_DIR = path.join(__dirname, 'labels');
 const LOCAL_SERVER_PORT = 9876;
 
+// Which location does this printer client serve?
+// Set via environment variable before starting: LOCATION=shah_alam node index.js
+// Valid values: shah_alam | putrajaya | klang  (leave blank to print ALL locations)
+const MY_LOCATION = (process.env.LOCATION || '').trim();
+
 // Configure default axios headers
 axios.defaults.headers.common['X-API-TOKEN'] = API_TOKEN;
 
@@ -71,6 +76,7 @@ const server = http.createServer((req, res) => {
 server.listen(LOCAL_SERVER_PORT, () => {
     console.log('🐬 Hantar Printer Client Started');
     console.log(`📡 Connecting to: ${API_URL}`);
+    console.log(`📍 Location filter: ${MY_LOCATION ? MY_LOCATION.toUpperCase() : 'ALL LOCATIONS'}`);
     console.log(`🌐 Local server: http://localhost:${LOCAL_SERVER_PORT}`);
     console.log(`⏱️  Polling every ${POLL_INTERVAL / 1000} seconds\n`);
 });
@@ -789,11 +795,16 @@ async function markOrderPrinted(orderId) {
 // Check for pending orders and print them
 async function checkAndPrint() {
     try {
-        const response = await axios.get(`${API_URL}/print-jobs/pending`);
+        // Build URL — append ?location= so the server filters by this area
+        const pendingUrl = MY_LOCATION
+            ? `${API_URL}/print-jobs/pending?location=${MY_LOCATION}`
+            : `${API_URL}/print-jobs/pending`;
+
+        const response = await axios.get(pendingUrl);
         const { count, orders } = response.data;
 
         if (count > 0) {
-            console.log(`\n📋 Found ${count} pending order(s)`);
+            console.log(`\n📋 Found ${count} pending order(s) for [${MY_LOCATION || 'ALL'}]`);
 
             for (const order of orders) {
                 console.log(`\n🖨️  Processing Order #${order.id} - ${order.nama}`);
@@ -810,7 +821,8 @@ async function checkAndPrint() {
 }
 
 // Start polling
-console.log('✅ Client ready. Waiting for orders...\n');
+const locationLabel = MY_LOCATION ? MY_LOCATION.toUpperCase() : 'ALL LOCATIONS';
+console.log(`✅ Client ready [${locationLabel}]. Waiting for orders...\n`);
 checkAndPrint(); // Check immediately on start
 setInterval(checkAndPrint, POLL_INTERVAL);
 
