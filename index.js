@@ -8,7 +8,7 @@ const { createCanvas } = require('canvas');
 const JsBarcode = require('jsbarcode');
 
 // Configuration
-const API_URL = 'https://hantar-production.up.railway.app/api';
+const API_URL = 'http://hantar.test/api';
 const API_TOKEN = process.env.API_TOKEN || '76c01967f47a090d67debc73dc2d37e4e31285ce7d5f0fa24f09b77a03539c3e';
 const POLL_INTERVAL = 5000; // 5 seconds
 const OUTPUT_DIR = path.join(__dirname, 'labels');
@@ -73,12 +73,23 @@ const server = http.createServer((req, res) => {
     }
 });
 
-server.listen(LOCAL_SERVER_PORT, () => {
+server.listen(LOCAL_SERVER_PORT, async () => {
     console.log('🐬 Hantar Printer Client Started');
     console.log(`📡 Connecting to: ${API_URL}`);
-    console.log(`📍 Location filter: ${MY_LOCATION ? MY_LOCATION.toUpperCase() : 'ALL LOCATIONS'}`);
+
+    if (MY_LOCATION) {
+        console.log(`📍 Location: ${MY_LOCATION.toUpperCase()}`);
+    } else {
+        console.log(`⚠️  No LOCATION set — running in UNROUTABLE mode.`);
+        console.log(`   Orders matching any configured location will be SKIPPED.`);
+        console.log(`   Only orders with unknown/unmatched addresses will print here.`);
+    }
+
     console.log(`🌐 Local server: http://localhost:${LOCAL_SERVER_PORT}`);
     console.log(`⏱️  Polling every ${POLL_INTERVAL / 1000} seconds\n`);
+
+    // Release any stale claims from a previous crash so they get re-processed
+    await unclaimStaleClaims();
 });
 
 // Generate checkbox image
@@ -820,8 +831,23 @@ async function checkAndPrint() {
     }
 }
 
+// Release stale claims from a previous crash for this location
+async function unclaimStaleClaims() {
+    try {
+        const url = MY_LOCATION
+            ? `${API_URL}/print-jobs/unclaim?location=${MY_LOCATION}`
+            : `${API_URL}/print-jobs/unclaim?location=unroutable`;
+        const res = await axios.post(url);
+        if (res.data.released > 0) {
+            console.log(`♻️  Released ${res.data.released} stale claim(s) — will re-process on next poll.`);
+        }
+    } catch (err) {
+        console.error('⚠️  Could not unclaim stale jobs:', err.message);
+    }
+}
+
 // Start polling
-const locationLabel = MY_LOCATION ? MY_LOCATION.toUpperCase() : 'ALL LOCATIONS';
+const locationLabel = MY_LOCATION ? MY_LOCATION.toUpperCase() : 'UNROUTABLE';
 console.log(`✅ Client ready [${locationLabel}]. Waiting for orders...\n`);
 checkAndPrint(); // Check immediately on start
 setInterval(checkAndPrint, POLL_INTERVAL);
