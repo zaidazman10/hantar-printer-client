@@ -2,3 +2,4 @@ node_modules/
 labels/
 *.log
 .DS_Store
+.env
