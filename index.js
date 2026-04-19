@@ -852,8 +852,10 @@ async function unclaimStaleClaims() {
 // Start polling
 const locationLabel = MY_LOCATION ? MY_LOCATION.toUpperCase() : 'UNROUTABLE';
 console.log(`✅ Client ready [${locationLabel}]. Waiting for orders...\n`);
-checkAndPrint(); // Check immediately on start
-setInterval(checkAndPrint, POLL_INTERVAL);
+unclaimStaleClaims().then(() => {
+    checkAndPrint(); // Check immediately on start
+    setInterval(checkAndPrint, POLL_INTERVAL);
+});
 
 // Handle graceful shutdown
 process.on('SIGINT', () => {
