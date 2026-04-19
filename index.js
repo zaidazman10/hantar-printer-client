@@ -8,7 +8,7 @@ const { createCanvas } = require('canvas');
 const JsBarcode = require('jsbarcode');
 
 // Configuration
-const API_URL = 'http://hantar.test/api';
+const API_URL = 'https://hantar-production.up.railway.app/api';
 const API_TOKEN = process.env.API_TOKEN || '76c01967f47a090d67debc73dc2d37e4e31285ce7d5f0fa24f09b77a03539c3e';
 const POLL_INTERVAL = 5000; // 5 seconds
 const OUTPUT_DIR = path.join(__dirname, 'labels');
